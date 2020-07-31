@@ -34,12 +34,12 @@ class tiket():
         #items = [{"name": "fant", "price": "1.70"},{"name": "fantsssasss", "price": "1.70"},{"name": "fantasss", "price": "1.70"}]
         items = data["items"]
         for item in items:
-            space = 32 - len(item["price_producto"]) 
+            space = 32 - len(item["price_producto"])
             if item["quantity"] > 1:
-                p.text(str(item["quantity"])+"X".ljust(15) +str(item["price_producto"]) + "\n" )
+                p.text(str(item["quantity"])+"X".ljust(15) +"@" +str(item["price_producto"]) + "\n" )
                 price = '%.2f' % (float(item["price_producto"]) * item["quantity"])
                 space = 32 - len(str(price)) 
-                p.text(item["name"].ljust(space) +str(price) + '\n')
+                p.text(item["name"].ljust(space) + str(price) + '\n')
             else:
                 p.text(item["name"].ljust(space) +str(item["price_producto"]) + '\n')
             #print(item["name"].ljust(space) +str(item["price"]))
