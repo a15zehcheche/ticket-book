@@ -3,8 +3,9 @@
     <div class="tiket-add m-3 h1 btn btn-primary" @click="back()">完成</div>
 
     <div class="text-center h1 title m-3" contenteditable="true">{{data.name}}</div>
-    <div class="item-container ml-3 mr-3">
+    <div class="item-container ml-3 mr-3" v-click-outside="stop">
       <div
+        id="tiket-add-container"
         class="item-add"
         v-for="(item,index) in data.items"
         :key="index"
@@ -23,26 +24,27 @@
 <script>
 import ItemAdd from "@/components/work/tiket/itemAdd";
 import Add from "@/components/work/add";
+import ClickOutside from "vue-click-outside";
 
 export default {
   name: "Tiket_add",
   components: {
     "v-item": ItemAdd,
-    "v-add": Add
+    "v-add": Add,
   },
   props: {
-    data: Object
+    data: Object,
   },
   data() {
     return {
       items: [],
-      item_select_index: null
+      item_select_index: null,
     };
   },
   created() {
     // this.$set(this.user, 'last_name', 'Doe')
-
-    this.$props.data.items.map(item => {
+    console.log(this.$props.data);
+    this.$props.data.items.map((item) => {
       this.$set(item, "select", 0);
       return item;
     });
@@ -51,38 +53,42 @@ export default {
   destroyed() {
     window.removeEventListener("keydown", this.keymonitor);
   },
-  mounted: function() {},
+  mounted: function () {
+    // prevent click outside event with popupItem.
+    this.popupItem = this.$el;
+  },
+  directives: {
+    ClickOutside,
+  },
   methods: {
-    back: function() {
+    back: function () {
       this.$emit("back");
     },
-    disable_tiket: function(id) {},
-    selectItem: function(index) {
+    disable_tiket: function (id) {},
+    selectItem: function (index) {
       if (this.item_select_index != null && index >= 0) {
         this.$props.data.items[this.item_select_index].select = 0;
       }
-      if (index == null) {
-        this.item_select_index = null;
-      } else {
-        this.item_select_index = index;
+      if (index != null) {
         this.$props.data.items[index].select = 1;
       }
+      this.item_select_index = index;
 
       //console.log(this.$props.data.items[index]);
     },
-    selectNextItem: function() {
+    selectNextItem: function () {
       if (this.item_select_index < this.$props.data.items.length - 1) {
         this.selectItem(this.item_select_index + 1);
       }
       //console.log("next");
     },
-    selectPreviouItem: function() {
+    selectPreviouItem: function () {
       if (this.item_select_index > 0) {
         this.selectItem(this.item_select_index - 1);
       }
       //console.log("previou");
     },
-    keymonitor: function(event) {
+    keymonitor: function (event) {
       //let cmd = String.fromCharCode(event.keyCode).toLowerCase();
       //console.log(event.keyCode);
       if (this.item_select_index != null) {
@@ -95,7 +101,7 @@ export default {
         }
       }
     },
-    dropItem: function(index) {
+    dropItem: function (index) {
       this.$swal
         .fire({
           title: "确定要删除吗?",
@@ -105,42 +111,72 @@ export default {
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
           cancelButtonText: "取消",
-          confirmButtonText: "是!"
+          confirmButtonText: "是!",
         })
-        .then(result => {
+        .then((result) => {
           if (result.value) {
-            if (index == 0) {
-            } else {
-              this.selectItem(this.item_select_index - 1);
-            }
-            this.$props.data.items.splice(index, 1);
-this.$swal.fire({
-                  position: "top-end",
-                  icon: "success",
-                  title: "已删除",
-                  showConfirmButton: false,
-                  timer: 400
-                });
-            // this.axios
-            //   .put(this.$hostname + "/disableTiket/" + id)
-            //   .then(response => {
-            //     console.log(response);
-            //     this.$swal.fire({
-            //       position: "top-end",
-            //       icon: "success",
-            //       title: "已删除",
-            //       showConfirmButton: false,
-            //       timer: 1000
-            //     });
-            //     this.$emit("refesTiket");
-            //   })
-            //   .catch(function(error) {
-            //     console.log(error);
-            //   });
+            this.axios
+              .delete(
+                this.$hostname +
+                  "/tiketitem/" +
+                  this.$props.data.items[index].id
+              )
+              .then((response) => {
+                if (response.data.done) {
+                  this.$swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "已删除",
+                    showConfirmButton: false,
+                    timer: 400,
+                  });
+                  if (index == 0 && this.$props.data.items.length > 1) {
+                    this.selectItem(this.item_select_index + 1);
+                  } else if (this.$props.data.items.length == 1) {
+                    this.selectItem(null);
+                  } else {
+                    this.selectItem(this.item_select_index - 1);
+                  }
+                  this.$props.data.items.splice(index, 1);
+                  this.$props.data.price_to_pay = this.sumItemPrice(
+                    this.$props.data.items
+                  );
+                  //this.$emit("refesTiket");
+                } else {
+                  this.$swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: "错误",
+                    showConfirmButton: false,
+                    timer: 400,
+                  });
+                }
+                console.log(response);
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
           }
         });
-    }
-  }
+    },
+    sumItemPrice: function (items) {
+      if (items.length != 0) {
+        let price_to_pay = 0;
+        items.forEach((element) => {
+          price_to_pay += parseFloat(element.price_producto) * element.quantity;
+        });
+        return price_to_pay.toFixed(2);
+      } else {
+        return 0;
+      }
+    },
+    stop: function (event) {
+      console.log("click out side");
+      if (this.item_select_index != null) {
+        this.$props.data.items[this.item_select_index].select = 0;
+      }
+    },
+  },
 };
 </script>
 

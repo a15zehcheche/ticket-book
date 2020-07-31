@@ -46,7 +46,7 @@ export default {
     "v-add": Add,
     "v-summary": Summary,
     "v-location": Location,
-    "v-add-item": Add_item
+    "v-add-item": Add_item,
   },
   props: {},
   data() {
@@ -59,28 +59,32 @@ export default {
       add_item_check: 0,
       tiket_select_edit: null,
 
-      tiket_select_add_item: null
+      tiket_select_add_item: null,
     };
   },
-  mounted: function() {
+  mounted: function () {
     this.get_espacio();
   },
   methods: {
-    get_tiket: function() {
-      this.axios.get(this.$hostname + "/tikets").then(response => {
+    get_tiket: function () {
+      this.axios.get(this.$hostname + "/tikets").then((response) => {
         this.tiket_all = response.data
-          .filter(tiket => tiket.active == 1)
-          .map(tiket => {
+          .filter((tiket) => tiket.active == 1)
+          .map((tiket) => {
             tiket.select = 0;
             tiket.price_to_pay = this.sumItemPrice(tiket.items);
+            tiket.items.map((item) => {
+              this.$set(item, "select", 0);
+              return item;
+            });
             return tiket;
           });
         this.filerTiket(0);
         console.log(this.tiket);
       });
     },
-    get_espacio: function() {
-      this.axios.get(this.$hostname + "/espacios").then(response => {
+    get_espacio: function () {
+      this.axios.get(this.$hostname + "/espacios").then((response) => {
         this.espacio = response.data;
         this.espacio_select_id = this.espacio[0].id;
         this.get_tiket();
@@ -88,7 +92,7 @@ export default {
         console.log(response.data);
       });
     },
-    updateSelect: function(index) {
+    updateSelect: function (index) {
       if (this.tiket_selected_index != null) {
         this.tiket[this.tiket_selected_index].select = 0;
       }
@@ -104,14 +108,14 @@ export default {
       //   return tiket;
       // });
     },
-    filerTiket: function(espacio_index) {
+    filerTiket: function (espacio_index) {
       this.espacio_select_id = espacio_index;
       if (espacio_index == -1) {
         this.tiket = this.tiket_all;
       } else {
         this.tiket = this.tiket_all
-          .filter(tiket => tiket.id_ESPACIO == this.espacio[espacio_index].id)
-          .map(tiket => {
+          .filter((tiket) => tiket.id_ESPACIO == this.espacio[espacio_index].id)
+          .map((tiket) => {
             tiket.select = 0;
             return tiket;
           });
@@ -122,7 +126,7 @@ export default {
       console.log(this.tiket_all);
       this.tiket_selected_index = null;
     },
-    add_item: function(index) {
+    add_item: function (index) {
       // this.tiket_select_add_item = this.tiket_all.filter(
       //   tiket => tiket.id == id
       // )[0];
@@ -130,13 +134,13 @@ export default {
       this.add_item_check = 1;
     },
 
-    back: function() {
+    back: function () {
       this.add_item_check = 0;
     },
-    sumItemPrice: function(items) {
+    sumItemPrice: function (items) {
       if (items.length != 0) {
         let price_to_pay = 0;
-        items.forEach(element => {
+        items.forEach((element) => {
           price_to_pay += parseFloat(element.price_producto) * element.quantity;
         });
         return price_to_pay.toFixed(2);
@@ -149,8 +153,8 @@ export default {
       } else {
         return 0;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
