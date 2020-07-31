@@ -4,7 +4,15 @@
 
     <div class="text-center h1 title m-3" contenteditable="true">{{data.name}}</div>
     <div class="item-container ml-3 mr-3">
-      <v-item v-for="(item,index) in data.items" :key="index" :data="item" />
+      <div
+        class="item-add"
+        v-for="(item,index) in data.items"
+        :key="index"
+        @click="selectItem(index)"
+        v-bind:class="{ 'item-select': item.select }"
+      >
+        <v-item :data="item" />
+      </div>
     </div>
     <div class="footer w-100">
       <div class="h3 text-right mr-3">Total: {{data.price_to_pay}}</div>
@@ -13,13 +21,13 @@
 </template>
 
 <script>
-import Item from "@/components/work/tiket/item";
+import ItemAdd from "@/components/work/tiket/itemAdd";
 import Add from "@/components/work/add";
 
 export default {
   name: "Tiket_add",
   components: {
-    "v-item": Item,
+    "v-item": ItemAdd,
     "v-add": Add
   },
   props: {
@@ -27,15 +35,67 @@ export default {
   },
   data() {
     return {
-      items: []
+      items: [],
+      item_select_index: null
     };
+  },
+  created() {
+    // this.$set(this.user, 'last_name', 'Doe')
+
+    this.$props.data.items.map(item => {
+      this.$set(item, "select", 0);
+      return item;
+    });
+    window.addEventListener("keydown", this.keymonitor);
+  },
+  destroyed() {
+    window.removeEventListener("keydown", this.keymonitor);
   },
   mounted: function() {},
   methods: {
     back: function() {
       this.$emit("back");
     },
-    disable_tiket: function(id) {
+    disable_tiket: function(id) {},
+    selectItem: function(index) {
+      if (this.item_select_index != null && index >= 0) {
+        this.$props.data.items[this.item_select_index].select = 0;
+      }
+      if (index == null) {
+        this.item_select_index = null;
+      } else {
+        this.item_select_index = index;
+        this.$props.data.items[index].select = 1;
+      }
+
+      //console.log(this.$props.data.items[index]);
+    },
+    selectNextItem: function() {
+      if (this.item_select_index < this.$props.data.items.length - 1) {
+        this.selectItem(this.item_select_index + 1);
+      }
+      //console.log("next");
+    },
+    selectPreviouItem: function() {
+      if (this.item_select_index > 0) {
+        this.selectItem(this.item_select_index - 1);
+      }
+      //console.log("previou");
+    },
+    keymonitor: function(event) {
+      //let cmd = String.fromCharCode(event.keyCode).toLowerCase();
+      //console.log(event.keyCode);
+      if (this.item_select_index != null) {
+        if (event.keyCode == 38) {
+          this.selectPreviouItem();
+        } else if (event.keyCode == 40) {
+          this.selectNextItem();
+        } else if (event.keyCode == 8) {
+          this.dropItem(this.item_select_index);
+        }
+      }
+    },
+    dropItem: function(index) {
       this.$swal
         .fire({
           title: "确定要删除吗?",
@@ -49,22 +109,34 @@ export default {
         })
         .then(result => {
           if (result.value) {
-            this.axios
-              .put(this.$hostname + "/disableTiket/" + id)
-              .then(response => {
-                console.log(response);
-                this.$swal.fire({
+            if (index == 0) {
+            } else {
+              this.selectItem(this.item_select_index - 1);
+            }
+            this.$props.data.items.splice(index, 1);
+this.$swal.fire({
                   position: "top-end",
                   icon: "success",
                   title: "已删除",
                   showConfirmButton: false,
-                  timer: 1000
+                  timer: 400
                 });
-                this.$emit("refesTiket");
-              })
-              .catch(function(error) {
-                console.log(error);
-              });
+            // this.axios
+            //   .put(this.$hostname + "/disableTiket/" + id)
+            //   .then(response => {
+            //     console.log(response);
+            //     this.$swal.fire({
+            //       position: "top-end",
+            //       icon: "success",
+            //       title: "已删除",
+            //       showConfirmButton: false,
+            //       timer: 1000
+            //     });
+            //     this.$emit("refesTiket");
+            //   })
+            //   .catch(function(error) {
+            //     console.log(error);
+            //   });
           }
         });
     }
@@ -95,5 +167,12 @@ export default {
 .tiket-active {
   border: 10px solid skyblue;
   box-sizing: content-box;
+}
+
+.item-add {
+  cursor: pointer;
+}
+.item-select {
+  background-color: rgba(0, 123, 255, 0.5);
 }
 </style>
