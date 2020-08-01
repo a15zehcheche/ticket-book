@@ -1,6 +1,6 @@
 <template>
-  <div class="d-flex flex-row justify-content-between">
-      <div class="tiket-item">{{data.name}}</div>
+  <div class="tiket-item d-flex flex-row justify-content-between">
+      <div class="name">{{data.name}}</div>
       <div>x{{data.quantity}}</div>
       <div>{{data.price_producto}}</div>
   </div>
@@ -29,7 +29,10 @@ export default {
 </script>
 
 <style scoped>
-.tiket-item{
+.tiket-item .name{
   width: 150px;
+}
+.tiket-item{
+  font-size: 1.5rem;
 }
 </style>

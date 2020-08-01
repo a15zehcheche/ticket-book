@@ -31,7 +31,7 @@
               invalid-feedback="请输入名称"
             >
               <b-form-input
-                id="name-input"
+                id="name-name"
                 v-model="producto_edit.name"
                 :state="producto_edit.nameState"
                 required
@@ -47,7 +47,7 @@
               invalid-feedback="请输入数量"
             >
               <b-form-input
-                :id="'type-number'"
+                :id="'type-quantity'"
                 step="1"
                 min="1"
                 :type="'number'"
@@ -67,7 +67,7 @@
               invalid-feedback="请输入价格 格式(00 / 00.00)"
             >
               <b-form-input
-                :id="'type-number'"
+                :id="'type-price'"
                 step="0.01"
                 min="0.00"
                 :type="'number'"
@@ -100,10 +100,10 @@ import LineaItem from "@/components/work/tiket/lineaItem";
 export default {
   name: "add-item",
   components: {
-    "v-l-item": LineaItem
+    "v-l-item": LineaItem,
   },
   props: {
-    data: Object
+    data: Object,
   },
   data() {
     return {
@@ -117,30 +117,30 @@ export default {
         priceState: null,
         name: "",
         quantity: 1,
-        price: ""
-      }
+        price: "",
+      },
     };
   },
-  mounted: function() {
+  mounted: function () {
     this.get_productos();
     this.get_productosTipos();
   },
   methods: {
-    checknum: function(event) {
+    checknum: function (event) {
       this.producto_edit.price = this.producto_edit.price.replace(
         /[^0-9]/g,
         ""
       );
     },
-    get_productos: function() {
-      this.axios.get(this.$hostname + "/productos").then(response => {
+    get_productos: function () {
+      this.axios.get(this.$hostname + "/productos").then((response) => {
         this.productos = this.productos_all = response.data;
         console.log(response.data);
       });
     },
-    get_productosTipos: function() {
-      this.axios.get(this.$hostname + "/productostipos").then(response => {
-        this.tipos = response.data.map(item => {
+    get_productosTipos: function () {
+      this.axios.get(this.$hostname + "/productostipos").then((response) => {
+        this.tipos = response.data.map((item) => {
           let container = {};
           container = item;
           container.active = 0;
@@ -149,8 +149,8 @@ export default {
         console.log(response.data);
       });
     },
-    productos_filter: function(index) {
-      this.tipos = this.tipos.map(item => {
+    productos_filter: function (index) {
+      this.tipos = this.tipos.map((item) => {
         let container = {};
         container = item;
         container.active = 0;
@@ -160,7 +160,7 @@ export default {
         this.productos = this.productos_all;
       } else {
         this.productos = this.productos_all.filter(
-          producto => producto.id_tipos == this.tipos[index].id
+          (producto) => producto.id_tipos == this.tipos[index].id
         );
         this.tipos[index].active = true;
       }
@@ -216,31 +216,70 @@ export default {
       // Hide the modal manually
       this.$nextTick(() => {
         //this.$bvModal.hide("modal-product-update");
-        console.log("add");
+        //console.log("add");
+        let item = {
+          id: 0,
+          name: this.producto_edit.name,
+          price: this.producto_edit.price,
+        };
+        this.addItem(item);
+        this.resetData();
       });
       //this.update_producto();
     },
 
-    addItem: function(item) {
+    addItem: function (item) {
+      //console.log(item);
       let data = {
         tiket: this.data,
         item: item,
-        quantity: this.producto_edit.quantity
+        quantity: this.producto_edit.quantity,
       };
-      console.log(data);
+      //console.log(data);
       this.axios
         .post(this.$hostname + "/tiketitem", data)
-        .then(response => {
-          console.log(response);
-          //resflex
-          this.$emit("refesTiket");
+        .then((response) => {
+          //console.log(response);
+          let item = this.itemFormater(response.data.data);
+          this.$props.data.items.push(item);
+          this.$props.data.price_to_pay = this.sumItemPrice(
+            this.$props.data.items
+          );
+          //this.$emit("refesTiket");
         })
-        .catch(function(error) {
+        .catch(function (error) {
           console.log(error);
         });
       this.producto_edit.quantity = 1;
-    }
-  }
+    },
+    itemFormater(item) {
+      item.select = 0;
+      //this.$set(item, "select", 0);
+      item.price_producto = item.price_producto.toFixed(2);
+      return item;
+    },
+    sumItemPrice: function (items) {
+      if (items.length != 0) {
+        let price_to_pay = 0;
+        items.forEach((element) => {
+          price_to_pay += parseFloat(element.price_producto) * element.quantity;
+        });
+        return price_to_pay.toFixed(2);
+      } else {
+        return 0;
+      }
+    },
+    resetData: function () {
+      this.producto_edit = {
+        nameState: null,
+        quantityState: null,
+        priceState: null,
+        name: "",
+        quantity: 1,
+        price: "",
+      };
+    },
+  },
 };
 </script>
 

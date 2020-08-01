@@ -58,7 +58,8 @@ class TiketItemManager {
             $tiketItem->save();
 
             return [
-                'done' => true
+                'done' => true,
+                'data' => $tiketItem
             ];
 
         } catch (\Exception $e) {

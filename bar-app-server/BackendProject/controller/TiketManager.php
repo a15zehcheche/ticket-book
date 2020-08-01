@@ -55,7 +55,8 @@ class TiketManager {
             $tiket->save();
 
             return [
-                'done' => true
+                'done' => true,
+                'data' => $tiket
             ];
 
         } catch (\Exception $e) {
@@ -76,16 +77,13 @@ class TiketManager {
                 ];
             }
 
-            if (!array_key_exists('name', (array) $body)) {
-                return [
-                    'done' => false
-                ];
-            }
-
-            $tiket->name = $body->name;
+            if (array_key_exists('name', (array) $body)) {
+                $tiket->name = $body->name;
+              
+            }         
 
             return [
-                'done' => $this->tiketDao->save($tiket),
+                'done' => $tiket->save(),
                 'tiket' => $tiket
             ];
 

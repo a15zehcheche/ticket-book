@@ -86,9 +86,9 @@
     try {
         $response = $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
     } catch (HttpRouteNotFoundException $e) {
-        $response = array("Error" => "Route not found");
+        $response = array("Error" => "Route not found", "done" => false);
     } catch (HttpMethodNotAllowedException $e) {
-        $response = array("Error" => "Route not found or incorrect method.");
+        $response = array("Error" => "Route not found or incorrect method.", "done" => false);
     } catch (\Exception $e) {
     	Logger::error($e->getMessage());
 		Logger::error($e->getFile() . ' - ' . $e->getLine());

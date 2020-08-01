@@ -50,7 +50,8 @@ export default {
     size: Number,
     tipos: Array,
     location: Array,
-    espacio_select: Number
+    espacio_select: Number,
+    data: Array,
   },
   data() {
     return {
@@ -60,21 +61,26 @@ export default {
       type: "",
     };
   },
-  mounted: function() {},
+  mounted: function () {},
   methods: {
-    add_tiket: function() {
+    add_tiket: function () {
       let element = this;
       this.axios
         .post(this.$hostname + "/tiket", {
           name: this.name,
           id_ESPACIO: this.type,
-          name_ESPACIO: this.location.filter(espacio=>espacio.id == this.type)[0].name
+          name_ESPACIO: this.location.filter(
+            (espacio) => espacio.id == this.type
+          )[0].name,
         })
-        .then(function(response) {
+        .then((response) => {
           console.log(response);
-          element.$emit("tiketAdd");
+          let ticket = response.data.data;
+          ticket.display = 1;
+          this.$props.data.push(ticket);
+          //element.$emit("tiketAdd");
         })
-        .catch(function(error) {
+        .catch(function (error) {
           console.log(error);
         });
     },
@@ -127,10 +133,10 @@ export default {
 
       this.resetModal();
     },
-    set_espacio: function() {
+    set_espacio: function () {
       this.type = this.espacio_select;
-    }
-  }
+    },
+  },
 };
 </script>
 

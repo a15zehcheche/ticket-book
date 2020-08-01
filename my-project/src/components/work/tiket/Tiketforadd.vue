@@ -66,6 +66,7 @@ export default {
     },
     disable_tiket: function (id) {},
     selectItem: function (index) {
+      window.addEventListener("keydown", this.keymonitor);
       if (this.item_select_index != null && index >= 0) {
         this.$props.data.items[this.item_select_index].select = 0;
       }
@@ -124,20 +125,26 @@ export default {
               .then((response) => {
                 if (response.data.done) {
                   this.$swal.fire({
-                    position: "top-end",
+                    position: "top-end", // top-start
                     icon: "success",
                     title: "已删除",
                     showConfirmButton: false,
-                    timer: 400,
+                    timer: 500,
                   });
-                  if (index == 0 && this.$props.data.items.length > 1) {
-                    this.selectItem(this.item_select_index + 1);
-                  } else if (this.$props.data.items.length == 1) {
-                    this.selectItem(null);
-                  } else {
-                    this.selectItem(this.item_select_index - 1);
-                  }
                   this.$props.data.items.splice(index, 1);
+
+                  if (index == 0 && this.$props.data.items.length >= 1) {
+                    this.$props.data.items[0].select = 1;
+                    //this.selectItem(0);
+                  } else if (index == 0 && this.$props.data.items.length == 0) {
+                    this.item_select_index = null;
+                  } else {
+                    this.item_select_index -= 1;
+                    this.$props.data.items[this.item_select_index].select = 1;
+
+                    //this.selectItem(this.item_select_index - 1);
+                  }
+
                   this.$props.data.price_to_pay = this.sumItemPrice(
                     this.$props.data.items
                   );
@@ -151,7 +158,7 @@ export default {
                     timer: 400,
                   });
                 }
-                console.log(response);
+                //console.log(response);
               })
               .catch(function (error) {
                 console.log(error);
@@ -171,9 +178,15 @@ export default {
       }
     },
     stop: function (event) {
-      console.log("click out side");
-      if (this.item_select_index != null) {
-        this.$props.data.items[this.item_select_index].select = 0;
+      //console.log("click out side");
+      //console.log(event.srcElement.className)
+      if (!event.srcElement.className.includes("swal2-styled")) {
+        //console.log("out click exception Sweetalert");
+        if (this.item_select_index != null) {
+          this.$props.data.items[this.item_select_index].select = 0;
+          this.item_select_index = null;
+        }
+        window.removeEventListener("keydown", this.keymonitor);
       }
     },
   },

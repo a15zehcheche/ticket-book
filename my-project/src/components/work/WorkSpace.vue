@@ -15,7 +15,8 @@
           :key="index"
           :data="item"
           :index="index"
-          :class="{'tiket-active':item.select}"
+          :class="{'tiket-active':item.select, hide:!item.display}"
+          :tikets="tiket"
           @refesTiket="get_tiket"
           @add_item="add_item"
         />
@@ -68,7 +69,7 @@ export default {
   methods: {
     get_tiket: function () {
       this.axios.get(this.$hostname + "/tikets").then((response) => {
-        this.tiket_all = response.data
+        this.tiket = this.tiket_all = response.data
           .filter((tiket) => tiket.active == 1)
           .map((tiket) => {
             tiket.select = 0;
@@ -109,20 +110,27 @@ export default {
       // });
     },
     filerTiket: function (espacio_index) {
-      this.espacio_select_id = espacio_index;
-      if (espacio_index == -1) {
-        this.tiket = this.tiket_all;
-      } else {
-        this.tiket = this.tiket_all
-          .filter((tiket) => tiket.id_ESPACIO == this.espacio[espacio_index].id)
-          .map((tiket) => {
-            tiket.select = 0;
-            return tiket;
-          });
-        // this.tiket = this.tiket_all.filter(
-        //   tiket => tiket.id_ESPACIO == espacio_index
-        // );
-      }
+      this.espacio_select_id = this.espacio[espacio_index].id;
+      // if (espacio_index == -1) {
+      //   this.tiket = this.tiket_all;
+      // } else {
+      //   this.tiket = this.tiket_all
+      //     .filter((tiket) => tiket.id_ESPACIO == this.espacio[espacio_index].id)
+      //     .map((tiket) => {
+      //       tiket.select = 0;
+      //       return tiket;
+      //     });
+      // }
+
+      this.tiket = this.tiket.map((tiket) => {
+        tiket.display = 0;
+        if (tiket.id_ESPACIO == this.espacio[espacio_index].id) {
+          tiket.display = 1;
+        }
+        tiket.select = 0;
+        return tiket;
+      });
+
       console.log(this.tiket_all);
       this.tiket_selected_index = null;
     },

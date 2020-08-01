@@ -1,35 +1,31 @@
 <template>
-  <div class="d-flex flex-row justify-content-between">
-      <div class="tiket-item">{{data.name}}</div>
-      <div>x{{data.quantity}}</div>
-      <div>{{data.price_producto}}</div>
+  <div class="tiket-item d-flex flex-row justify-content-between">
+    <div class="name">{{data.name}}</div>
+    <div>x{{data.quantity}}</div>
+    <div>{{data.price_producto}}</div>
   </div>
 </template>
 
 <script>
-
 export default {
   name: "tiket_item",
-  components: {
-    
-  },
+  components: {},
   props: {
-    data:Object
+    data: Object,
   },
   data() {
-    return {
-    };
+    return {};
   },
-  mounted: function() {
-  },
-  methods: {
-
-  }
+  mounted: function () {},
+  methods: {},
 };
 </script>
 
 <style scoped>
-.tiket-item{
+.tiket-item .name {
   width: 150px;
+}
+.tiket-item {
+  font-size: 1.5rem;
 }
 </style>
