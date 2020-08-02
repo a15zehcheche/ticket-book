@@ -64,7 +64,7 @@ class TiketItemManager {
 
         } catch (\Exception $e) {
             Logger::getInstance()->logError('tiketItemManager@save - ' . $e->getMessage());
-            return array('done' => false);
+            return array('done' => false, "error"=> $e->getMessage());
         }
     }
 

@@ -116,7 +116,7 @@ export default {
       this.$props.data.name = "";
       this.axios
         .put(this.$hostname + "/tiket" + "/" + this.$props.data.id, {
-          name:src
+          name: src,
         })
         .then((response) => {
           console.log(response);
@@ -162,5 +162,10 @@ export default {
 .tiket-active {
   border: 10px solid skyblue;
   box-sizing: content-box;
+}
+.item-container {
+  background: gainsboro;
+  height: 70%;
+  overflow-y: scroll;
 }
 </style>

@@ -78,8 +78,9 @@ export default {
               this.$set(item, "select", 0);
               return item;
             });
+            tiket.items = tiket.items.reverse();
             return tiket;
-          });
+          })
         this.filerTiket(0);
         console.log(this.tiket);
       });

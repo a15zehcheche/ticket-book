@@ -224,4 +224,9 @@ export default {
 .item-select {
   background-color: rgba(0, 123, 255, 0.5);
 }
+.item-container {
+  background: gainsboro;
+  height: 80%;
+  overflow-y: scroll;
+}
 </style>

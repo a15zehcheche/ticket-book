@@ -35,6 +35,7 @@
                 v-model="producto_edit.name"
                 :state="producto_edit.nameState"
                 required
+                @input="filter_producto"
               ></b-form-input>
             </b-form-group>
           </form>
@@ -78,14 +79,15 @@
             </b-form-group>
           </form>
           <div>
-            <div class="btn btn-success" @click="handleSubmit()">添加</div>
+            <!-- <div class="btn btn-success" @click="handleSubmit()">添加</div> -->
           </div>
         </div>
       </div>
-      <div class="d-flex flex-wrap">
+      <div class="productos-container d-flex flex-column">
         <v-l-item
           v-for="(item,index) in productos"
           :key="index"
+          :class="{hide: !item.display}"
           :data="item"
           @addItemToTiket="addItem"
         />
@@ -134,7 +136,10 @@ export default {
     },
     get_productos: function () {
       this.axios.get(this.$hostname + "/productos").then((response) => {
-        this.productos = this.productos_all = response.data;
+        this.productos = this.productos_all = response.data.map((producto) => {
+          producto.display = 1;
+          return producto;
+        });
         console.log(response.data);
       });
     },
@@ -198,10 +203,14 @@ export default {
       //if (!this.checkFormValidity()) {
       //return;
       //}
-      let valid = true;
-      if (!this.checkNameValidity()) {
-        valid = false;
+      if (this.producto_edit.name == "") {
+        this.producto_edit.name = "varis";
       }
+
+      let valid = true;
+      // if (!this.checkNameValidity()) {
+      //   valid = false;
+      // }
       if (!this.checkPriceValidity()) {
         valid = false;
       }
@@ -239,9 +248,10 @@ export default {
       this.axios
         .post(this.$hostname + "/tiketitem", data)
         .then((response) => {
-          //console.log(response);
+          console.log(response);
           let item = this.itemFormater(response.data.data);
-          this.$props.data.items.push(item);
+          //this.$props.data.items.push(item);
+          this.$props.data.items.unshift(item);
           this.$props.data.price_to_pay = this.sumItemPrice(
             this.$props.data.items
           );
@@ -278,6 +288,17 @@ export default {
         quantity: 1,
         price: "",
       };
+      this.filter_producto();
+    },
+    filter_producto: function () {
+      //console.log(this.producto_edit.name);
+      this.productos.map((producto) => {
+        if (producto.name.includes(this.producto_edit.name)) {
+          producto.display = 1;
+        } else {
+          producto.display = 0;
+        }
+      });
     },
   },
 };
@@ -315,7 +336,7 @@ export default {
   height: 95%;
   font-size: 28px; /* Increased text to enable scrolling */
   padding: 10px;
-  overflow: auto;
+
   width: 100%;
 }
 .store-sidenav-title {
@@ -330,5 +351,12 @@ export default {
 }
 .item-search > div {
   min-width: 30%;
+}
+.hide {
+  display: none !important;
+}
+.productos-container {
+  height: 75%;
+  overflow: auto;
 }
 </style>

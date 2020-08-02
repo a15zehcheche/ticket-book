@@ -17,21 +17,22 @@ export default {
   name: "food_item",
   components: {},
   props: {
-    data: Object
+    data: Object,
   },
   data() {
     return {};
   },
-  mounted: function() {},
+  mounted: function () {},
   methods: {
-    update: function(id) {
+    update: function (id) {
       this.$emit("edit", id);
     },
-    add_item_on_tiket: function(data) {
+    add_item_on_tiket: function (data) {
       //this.$emit("delete", id);
-      this.$emit("addItemToTiket",data);
-    }
-  }
+      this.$emit("addItemToTiket", data);
+    },
+  
+  },
 };
 </script>
 
