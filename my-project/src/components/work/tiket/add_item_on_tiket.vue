@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-secondary work-container d-flex align-items-center">
+  <div class="bg-secondary work-container d-flex align-items-center" v-click-outside="resetData">
     <div class="sidenav bg-light m-2 rounded">
       <div class="store-sidenav-title text-center ml-3 mr-3">
         <h2>分类</h2>
@@ -74,6 +74,7 @@
                 :type="'number'"
                 v-model="producto_edit.price"
                 :state="producto_edit.priceState"
+                @input="selectItem(null)"
                 required
               ></b-form-input>
             </b-form-group>
@@ -87,9 +88,11 @@
         <v-l-item
           v-for="(item,index) in productos"
           :key="index"
-          :class="{hide: !item.display}"
+          :class="{hide: !item.display,select:item.select}"
           :data="item"
+          :index="index"
           @addItemToTiket="addItem"
+          @selectItem="selectItem"
         />
       </div>
     </div>
@@ -98,6 +101,7 @@
 
 <script>
 import LineaItem from "@/components/work/tiket/lineaItem";
+import ClickOutside from "vue-click-outside";
 
 export default {
   name: "add-item",
@@ -121,11 +125,24 @@ export default {
         quantity: 1,
         price: "",
       },
+
+      item_select_index: null,
     };
   },
   mounted: function () {
     this.get_productos();
     this.get_productosTipos();
+    this.popupItem = this.$el;
+  },
+
+  directives: {
+    ClickOutside,
+  },
+  created() {
+    window.addEventListener("keydown", this.keymonitor);
+  },
+  destroyed() {
+    window.removeEventListener("keydown", this.keymonitor);
   },
   methods: {
     checknum: function (event) {
@@ -138,6 +155,7 @@ export default {
       this.axios.get(this.$hostname + "/productos").then((response) => {
         this.productos = this.productos_all = response.data.map((producto) => {
           producto.display = 1;
+          producto.select = 0;
           return producto;
         });
         console.log(response.data);
@@ -231,6 +249,7 @@ export default {
           name: this.producto_edit.name,
           price: this.producto_edit.price,
         };
+
         this.addItem(item);
         this.resetData();
       });
@@ -288,17 +307,80 @@ export default {
         quantity: 1,
         price: "",
       };
+      this.item_select_index = null;
       this.filter_producto();
+      window.removeEventListener("keydown", this.keymonitor);
     },
     filter_producto: function () {
       //console.log(this.producto_edit.name);
-      this.productos.map((producto) => {
+      // this.productos.map((producto) => {
+      //   if (producto.name.includes(this.producto_edit.name)) {
+      //     producto.display = 1;
+      //   } else {
+      //     producto.display = 0;
+      //   }
+      // });
+      window.addEventListener("keydown", this.keymonitor);
+      this.productos = this.productos_all.filter((producto) => {
         if (producto.name.includes(this.producto_edit.name)) {
-          producto.display = 1;
-        } else {
-          producto.display = 0;
+          producto.select = 0;
+          return producto;
         }
       });
+      this.item_select_index = null;
+    },
+    keymonitor: function () {
+      //console.log(event.keyCode);
+      //if (this.item_select_index != null) {
+      if (event.keyCode == 38) {
+        this.selectPreviouItem();
+      } else if (event.keyCode == 40) {
+        this.selectNextItem();
+        //code 13 enter
+      } else if (event.keyCode == 13 && this.item_select_index != null) {
+        this.setItem(this.productos[this.item_select_index]);
+      }
+      // }
+    },
+    selectNextItem: function () {
+      if (this.item_select_index == null) {
+        //console.log(this.productos.length);
+        if (this.productos.length != 0) {
+          this.selectItem(0);
+          this.item_select_index = 0;
+        } else {
+          this.item_select_index = null;
+        }
+      } else if (this.item_select_index < this.productos.length - 1) {
+        this.selectItem(this.item_select_index + 1);
+      }
+      //console.log("next");
+    },
+    selectPreviouItem: function () {
+      if (this.item_select_index > 0) {
+        this.selectItem(this.item_select_index - 1);
+      }
+      //console.log("previou");
+    },
+    selectItem: function (index) {
+      if (this.item_select_index != null && index >= 0) {
+        this.productos[this.item_select_index].select = 0;
+      }
+
+      if (index != null) {
+        this.productos[index].select = 1;
+      }
+      this.item_select_index = index;
+      window.addEventListener("keydown", this.keymonitor);
+    },
+    setItem(item) {
+      // console.log(item)
+      this.producto_edit = {
+        name: item.name,
+        quantity: 1,
+        price: item.price,
+      };
+      //this.item_select_index = null;
     },
   },
 };
@@ -358,5 +440,9 @@ export default {
 .productos-container {
   height: 75%;
   overflow: auto;
+}
+.select {
+  border: 3px solid rgba(0, 123, 255, 0.5) !important;
+  box-sizing: border-box;
 }
 </style>

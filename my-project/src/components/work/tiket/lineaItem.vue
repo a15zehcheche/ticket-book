@@ -1,5 +1,8 @@
 <template>
-  <div class="food-item rounded d-flex justify-content-between align-items-center">
+  <div
+    class="food-item rounded d-flex justify-content-between align-items-center"
+    @click="selectItem(index)"
+  >
     <div class="title ml-3 mr-3 food-item-name">
       <span>{{data.name}}</span>
     </div>
@@ -18,6 +21,7 @@ export default {
   components: {},
   props: {
     data: Object,
+    index: Number,
   },
   data() {
     return {};
@@ -31,7 +35,10 @@ export default {
       //this.$emit("delete", id);
       this.$emit("addItemToTiket", data);
     },
-  
+    selectItem: function (index) {
+      //console.log("select" + index);
+      this.$emit("selectItem", index);
+    },
   },
 };
 </script>
